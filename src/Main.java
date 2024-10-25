@@ -1,12 +1,13 @@
 public class Main {
-    public static final int SIZE = 30;
     public static Forest forest = new Forest();
-    public static ControlCenter controlCenter = new ControlCenter();
+    public static ControlCenter controlCenter;
+    public static SensorNode[][] sensorNodes = new SensorNode[Forest.SIZE][Forest.SIZE];
 
     public Main() {
     }
 
     public static void main(String[] args) {
+        controlCenter = new ControlCenter(sensorNodes);
         forest.initializeForest(controlCenter);
         startFire();
     }
@@ -52,11 +53,9 @@ public class Main {
 
         while(true) {
             displayForest();
-
             try {
                 Thread.sleep(3000L);
-            } catch (InterruptedException var2) {
-                InterruptedException e = var2;
+            } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }
         }

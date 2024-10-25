@@ -5,6 +5,7 @@ public class SensorNode implements Runnable {
     boolean isBorder;
     private ControlCenter controlCenter;
     private SensorNode[][] sensor;
+    public boolean hasReceivedFireAlert = false;
 
     public SensorNode(int nodePosX, int nodePosY, char[][] forest, boolean isBorder, ControlCenter controlCenter, SensorNode[][] sensor) {
         this.nodePosX = nodePosX;
@@ -18,13 +19,11 @@ public class SensorNode implements Runnable {
     public void run() {
         while(true) {
             synchronized(this) {
-                this.lookForFire();
+                lookForFire();
             }
-
             try {
-                Thread.sleep(500L);
-            } catch (InterruptedException var3) {
-                InterruptedException e = var3;
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 System.out.println(e.getMessage());
             }
         }
@@ -33,14 +32,14 @@ public class SensorNode implements Runnable {
     private synchronized void lookForFire() {
         for(int i = this.nodePosX - 1; i <= this.nodePosX + 1; ++i) {
             for(int j = this.nodePosY - 1; j <= this.nodePosY + 1; ++j) {
-                if (this.forest[i][j] == '@') {
+                if (this.forest[i][j] == '@' && !this.hasReceivedFireAlert) {
+                    this.hasReceivedFireAlert = true;
                     if (!this.isBorder) {
+                        System.out.println("CENTER SENSOR [" + this.nodePosY + ", " + this.nodePosX + "] DETECTED FIRE AT [" + i + ", " + j + "], PROPAGATING FIRE ALERT");
                         this.propagateFireAlert(new FireAlert(i, j, this));
-                        System.out.println("PROP sensor" + this.nodePosY + ", " + this.nodePosX + " fire at [" + i + ", " + j + "]");
                         return;
                     }
-
-                    System.out.println("sensor" + this.nodePosY + ", " + this.nodePosX + " fire at [" + i + ", " + j + "]");
+                    System.out.println("BORDER SENSOR [" + this.nodePosY + ", " + this.nodePosX + "] DETECTED FIRE AT [" + i + ", " + j + "], CALLING CENTRAL");
                     this.controlCenter.fightFire(i, j);
                 }
             }
@@ -60,25 +59,28 @@ public class SensorNode implements Runnable {
     private void propagateFireAlert(FireAlert fireAlert) {
         if (fireAlert.sender == this) {
             if (this.nodePosX > 1 && this.sensor[this.nodePosX - 3][this.nodePosY] != null) {
-                System.out.println("cima");
                 this.sensor[this.nodePosX - 3][this.nodePosY].receiveMessage(fireAlert);
+                System.out.println("TOP - [" + this.nodePosY + ", " + (this.nodePosX - 3) + "] RECEIVED FIRE ALERT");
             }
 
             if (this.nodePosX < 28 && this.sensor[this.nodePosX + 3][this.nodePosY] != null) {
-                System.out.println("baixo");
                 this.sensor[this.nodePosX + 3][this.nodePosY].receiveMessage(fireAlert);
+                System.out.println("BOTTOM - [" + this.nodePosY + ", " + (this.nodePosX + 3)+ "] RECEIVED FIRE ALERT");
             }
 
             if (this.nodePosY > 1 && this.sensor[this.nodePosX][this.nodePosY - 3] != null) {
-                System.out.println("esquerda");
                 this.sensor[this.nodePosX][this.nodePosY - 3].receiveMessage(fireAlert);
+                System.out.println("LEFT - [" + (this.nodePosY - 3) + ", " + this.nodePosX + "] RECEIVED FIRE ALERT");
             }
 
             if (this.nodePosY < 28 && this.sensor[this.nodePosX][this.nodePosY + 3] != null) {
-                System.out.println("direita");
                 this.sensor[this.nodePosX][this.nodePosY + 3].receiveMessage(fireAlert);
+                System.out.println("RIGHT - [" + (this.nodePosY + 3) + ", " + this.nodePosX + "] RECEIVED FIRE ALERT");
             }
         }
+    }
 
+    public void resetAlertStatus() {
+        this.hasReceivedFireAlert = false;
     }
 }

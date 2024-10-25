@@ -10,9 +10,8 @@ public class FireGenerator implements Runnable {
     public void run() {
         while(true) {
             try {
-                Thread.sleep(6000L);
-            } catch (InterruptedException var2) {
-                InterruptedException e = var2;
+                Thread.sleep(6000);
+            } catch (InterruptedException e) {
                 System.out.print(e.getMessage());
             }
 
@@ -26,7 +25,7 @@ public class FireGenerator implements Runnable {
         int firePosY = rand.nextInt(30);
         if (this.forest[firePosX][firePosY] != 'T') {
             this.forest[firePosX][firePosY] = '@';
-            System.out.println("\nFIRE AT: [" + firePosY + ", " + firePosX + "]\n");
+            System.out.println("\nSTARTED FIRE AT: [" + firePosY + ", " + firePosX + "]\n");
         }
 
     }
